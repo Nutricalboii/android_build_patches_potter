@@ -18,4 +18,186 @@
            path="vendor/motorola"
            remote="github"
            revision="lineage-15.1" />
+
+  <!-- Force sync metalava to fix droiddoc build dependencies -->
+  <project name="platform/tools/metalava"
+           path="tools/metalava"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync prebuilts/gradle-plugin to satisfy metalava-gradle-plugin-deps -->
+  <project name="platform/prebuilts/gradle-plugin"
+           path="prebuilts/gradle-plugin"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/turbine to satisfy turbine.jar dependency for Java builds -->
+  <project name="platform/external/turbine"
+           path="external/turbine"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/jarjar to satisfy jarjar.jar dependency for Java builds -->
+  <project name="platform/external/jarjar"
+           path="external/jarjar"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/javaparser to satisfy Java parsing requirements -->
+  <project name="platform/external/javaparser"
+           path="external/javaparser"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/javassist to satisfy bytecode instrumentation requirements -->
+  <project name="platform/external/javassist"
+           path="external/javassist"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/proguard to satisfy proguard.sh tool requirements -->
+  <project name="LineageOS/android_external_proguard"
+           path="external/proguard"
+           remote="github"
+           revision="lineage-16.0" />
+
+  <!-- Force sync external/smali to satisfy smali/baksmali tool requirements -->
+  <project name="platform/external/smali"
+           path="external/smali"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync prebuilts/r8 to satisfy d8 / dex compiler requirements -->
+  <project name="platform/prebuilts/r8"
+           path="prebuilts/r8"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/apache-http to satisfy org.apache.http.legacy library dependency -->
+  <project name="platform/external/apache-http"
+           path="external/apache-http"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/apache-xml to satisfy Apache XML parser dependencies -->
+  <project name="platform/external/apache-xml"
+           path="external/apache-xml"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/net/ims to satisfy ims-common dependency -->
+  <project name="platform/frameworks/opt/net/ims"
+           path="frameworks/opt/net/ims"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/chromium-libpac to satisfy libpac dependency -->
+  <project name="platform/external/chromium-libpac"
+           path="external/chromium-libpac"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/v8 to satisfy v8 dependency -->
+  <project name="platform/external/v8"
+           path="external/v8"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync external/error_prone to satisfy error_prone_annotations dependency -->
+  <project name="platform/external/error_prone"
+           path="external/error_prone"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/net/ethernet to satisfy ethernet deps -->
+  <project name="platform/frameworks/opt/net/ethernet"
+           path="frameworks/opt/net/ethernet"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- external/javapoet: master branch incompatible with Android 9 Soong - skipped -->
+
+  <!-- external/auto: master branch incompatible with Android 9 Soong - skipped -->
+
+  <!-- external/truth: master branch incompatible with Android 9 Soong - skipped -->
+
+  <!-- external/guava-libraries does not exist in AOSP - skipped -->
+
+  <!-- Force sync external/volley (commented out in default manifest) -->
+  <project name="platform/external/volley"
+           path="external/volley"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync packages/apps/Bluetooth (commented out in default manifest) -->
+  <project name="LineageOS/android_packages_apps_Bluetooth"
+           path="packages/apps/Bluetooth"
+           remote="github"
+           revision="lineage-16.0" />
+
+  <!-- Force sync packages/services/Telephony (not synced) -->
+  <project name="LineageOS/android_packages_services_Telephony"
+           path="packages/services/Telephony"
+           remote="github"
+           revision="lineage-16.0" />
+
+  <!-- Force sync frameworks/opt/vcard (needed by Bluetooth) -->
+  <project name="platform/frameworks/opt/vcard"
+           path="frameworks/opt/vcard"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/chips (email/contacts address chips UI) -->
+  <project name="platform/frameworks/opt/chips"
+           path="frameworks/opt/chips"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/photoviewer -->
+  <project name="platform/frameworks/opt/photoviewer"
+           path="frameworks/opt/photoviewer"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/colorpicker -->
+  <project name="platform/frameworks/opt/colorpicker"
+           path="frameworks/opt/colorpicker"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/datetimepicker -->
+  <project name="platform/frameworks/opt/datetimepicker"
+           path="frameworks/opt/datetimepicker"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/inputmethodcommon -->
+  <project name="platform/frameworks/opt/inputmethodcommon"
+           path="frameworks/opt/inputmethodcommon"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/inputconnectioncommon -->
+  <project name="platform/frameworks/opt/inputconnectioncommon"
+           path="frameworks/opt/inputconnectioncommon"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/bitmap -->
+  <project name="platform/frameworks/opt/bitmap"
+           path="frameworks/opt/bitmap"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync frameworks/opt/calendar -->
+  <project name="platform/frameworks/opt/calendar"
+           path="frameworks/opt/calendar"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
+
+  <!-- Force sync packages/services/Car (needed for android.car required by SystemUI) -->
+  <project name="platform/packages/services/Car"
+           path="packages/services/Car"
+           remote="aosp"
+           revision="refs/tags/android-9.0.0_r46" />
 </manifest>

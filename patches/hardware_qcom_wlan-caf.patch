@@ -1,0 +1,14 @@
+diff --git a/Android.mk b/Android.mk
+index eac91b0..5f0c8b2 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -1,8 +1,2 @@
+-ifeq ($(call my-dir),$(call project-path-for,wlan))
+-
+-# TODO:  Find a better way to separate build configs for ADP vs non-ADP devices
+-ifneq ($(BOARD_IS_AUTOMOTIVE),true)
++# include always, bypassing project-path-for,wlan mapping mismatch
+ include $(call all-subdir-makefiles)
+-endif
+-
+-endif

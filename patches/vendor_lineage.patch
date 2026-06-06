@@ -1,0 +1,12 @@
+diff --git a/build/tasks/kernel.mk b/build/tasks/kernel.mk
+index e5e59604..b5674356 100644
+--- a/build/tasks/kernel.mk
++++ b/build/tasks/kernel.mk
+@@ -186,7 +186,6 @@ endif
+ ifeq ($(TARGET_KERNEL_MODULES),)
+     TARGET_KERNEL_MODULES := INSTALLED_KERNEL_MODULES
+ endif
+-
+ KERNEL_ADDITIONAL_CONFIG_OUT := $(KERNEL_OUT)/.additional_config
+ 
+ # Internal implementation of make-kernel-target
