@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- Device Tree -->
+  <project name="LineageOS/android_device_motorola_potter" path="device/motorola/potter" remote="github" revision="lineage-16.0" />
+
+  <!-- Kernel Tree -->
+  <project name="LineageOS/android_kernel_motorola_msm8953" path="kernel/motorola/msm8953" remote="github" revision="lineage-16.0" />
+
+  <!-- Vendor Blobs -->
+  <project name="TheMuppets/proprietary_vendor_motorola" path="vendor/motorola" remote="github" revision="lineage-16.0" />
+</manifest>
