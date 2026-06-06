@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
   <!-- Device Tree: lineage-15.1 is the highest available branch for potter
-       (LineageOS never officially released a 16.0 tree for this device) -->
+       (LineageOS never released lineage-16.0 for this device) -->
   <project name="LineageOS/android_device_motorola_potter"
            path="device/motorola/potter"
            remote="github"
            revision="lineage-15.1" />
 
-  <!-- Kernel Tree: Use our fork with Halium 9.0 patches applied
-       OUR fork: github.com/Nutricalboii/android_kernel_motorola_msm8953
-       Branch: halium-9.0 (has all 123 required Halium config patches) -->
+  <!-- Kernel Tree: Our fork with 123 Halium 9.0 config patches applied -->
   <project name="Nutricalboii/android_kernel_motorola_msm8953"
            path="kernel/motorola/msm8953"
            remote="github"
            revision="halium-9.0" />
 
-  <!-- Vendor Blobs: TheMuppets proprietary blobs for motorola devices -->
+  <!-- Vendor Blobs: TheMuppets — lineage-15.1 is the highest branch with potter -->
   <project name="TheMuppets/proprietary_vendor_motorola"
            path="vendor/motorola"
            remote="github"
-           revision="lineage-16.0" />
+           revision="lineage-15.1" />
 </manifest>
