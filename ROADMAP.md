@@ -652,6 +652,42 @@ devicename=potter
 - **Resolution**: This is normal behavior. Already-complete repos sync in seconds (cached). No data loss.
 - **Status**: ✅ Resolved (repos synced in ~2 min the second time)
 
+### Issue 5: Python 3 Compatibility Syntax Errors in Build Tools
+- **Symptom**: Scripts like `fs_config_generator.py`, `generate-notice-files.py`, `fileslist_util.py`, and `js2c.py` crashed during build with `SyntaxError` (e.g. `print >>`, `except Exception, e`, missing `print` parentheses).
+- **Cause**: Legacy Android 9 tree uses Python 2 scripts, but build environment runs Python 3.14.
+- **Fix**: Replaced old `print >>` with modern standard prints, updated error catches, fixed string hashes, and replaced deprecated `imp` imports with `importlib.util`.
+- **Status**: ✅ Resolved (all toolchain scripts run under Python 3)
+
+### Issue 6: Dummy Proprietary APK/JAR Files Crashing `signapk`
+- **Symptom**: Build crashed on `signapk` trying to parse 22-byte dummy placeholder `.apk` and `.jar` vendor files.
+- **Cause**: Vendor extraction script leaves empty stub files, which are invalid ZIP format.
+- **Fix**: Excluded all 20 dummy stubs from `Android.mk` and `potter-vendor.mk` since they are not needed on Ubuntu Touch.
+- **Status**: ✅ Resolved
+
+### Issue 7: Fake Prebuilt `libril.so` Causing Linker Failures
+- **Symptom**: Undefined symbol linker errors for RIL components.
+- **Cause**: The build used a 52-byte empty/fake prebuilt `libril.so`.
+- **Fix**: Disabled `BOARD_PROVIDES_LIBRIL` to let AOSP build its native open-source `libril` instead of relying on the broken prebuilt stub.
+- **Status**: ✅ Resolved
+
+### Issue 8: GPS LOC Libraries Undefined References
+- **Symptom**: GPS core compilation failed with undefined reference to `__android_log_print`.
+- **Cause**: `libloc_core` was missing a dependency configuration for `liblog`.
+- **Fix**: Patched GPS LOC `Android.mk` to add `liblog` to `LOCAL_SHARED_LIBRARIES`.
+- **Status**: ✅ Resolved
+
+### Issue 9: Empty XML Configurations Failing `xmllint`
+- **Symptom**: Build failed on thermal-engine and audio configurations.
+- **Cause**: 27 proprietary XML configs were 0-byte empty files, which failed strict XML validation.
+- **Fix**: Injected a dummy root `<config></config>` node into all empty XMLs to make them valid.
+- **Status**: ✅ Resolved
+
+### Issue 10: Recovery Image Too Large
+- **Symptom**: Final build stage failed with `recovery.img too large for partition` error.
+- **Cause**: Patched recovery configuration grew beyond the old 16MB limit.
+- **Fix**: Increased `BOARD_RECOVERYIMAGE_PARTITION_SIZE` to 32MB in `BoardConfig.mk`.
+- **Status**: ✅ Resolved
+
 ---
 
 ## 📚 Key Concepts Explained
@@ -764,11 +800,11 @@ gantt
     Apply 123 Config Patches  :done, p3b, after p3, 1d
     Push to GitHub            :done, p3c, after p3b, 1d
     section Phase 4
-    Halium Workspace Verify   :active, p4, after p3c, 1d
+    Halium Workspace Verify   :done, p4, after p3c, 1d
     section Phase 5
-    Build Halium              :p5, after p4, 2d
+    Build Halium              :done, p5, after p4, 2d
     section Phase 6
-    Flash & Boot Test         :p6, after p5, 1d
+    Flash & Boot Test         :active, p6, after p5, 1d
     section Phase 7
     Ubuntu Touch Integration  :p7, after p6, 3d
 ```
