@@ -1,0 +1,58 @@
+diff --git a/Android.mk b/Android.mk
+index f77dc5b..9d798be 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -51,7 +51,7 @@ LOCAL_PROGUARD_FLAG_FILES := proguard.flags sip/proguard.flags
+ 
+ include frameworks/base/packages/SettingsLib/common.mk
+ 
+-include $(BUILD_PACKAGE)
++# include $(BUILD_PACKAGE)
+ 
+ # Build the test package
+ include $(call all-makefiles-under,$(LOCAL_PATH))
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index f2db63d..1816f55 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -177,13 +177,13 @@
+         <item name="android:navigationBarColor">@color/dialer_background_color</item>
+         <item name="android:navigationBarDividerColor">@color/dialer_divider_color</item>
+         <item name="android:windowLightNavigationBar">true</item>
+-        <item name="android:colorAccent">@color/dialer_theme_color</item>
++        <item name="android:colorAccent">@android:color/black</item>
+         <item name="android:dialogTheme">@style/DialerAlertDialogTheme</item>
+     </style>
+ 
+     <style name="DialerAlertDialogTheme"
+         parent="@android:style/Theme.Material.Light.Dialog">
+-        <item name="android:colorAccent">@color/dialer_theme_color</item>
++        <item name="android:colorAccent">@android:color/black</item>
+         <item name="android:textColor">?android:attr/textColorPrimaryInverseDisableOnly</item>
+     </style>
+ 
+@@ -275,13 +275,13 @@
+         <item name="android:navigationBarColor">@android:color/transparent</item>
+         <item name="android:homeAsUpIndicator">@drawable/ic_back_arrow</item>
+         <item name="emergencyButtonBackgroundColor">#3cffffff</item>
+-        <item name="dialpadTheme">@style/Dialpad_DarkTransparent</item>
++        <item name="dialpadTheme">@android:style/Theme.Material.Dialog</item>
+     </style>
+ 
+     <style name="EmergencyDialerThemeDark" parent="@style/EmergencyDialerTheme">
+         <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+         <item name="emergencyButtonBackgroundColor">#19414549</item>
+-        <item name="dialpadTheme">@style/Dialpad_LightTransparent</item>
++        <item name="dialpadTheme">@android:style/Theme.Material.Light.Dialog</item>
+     </style>
+ 
+     <style name="EmergencyDialerAlertDialogTheme"
+@@ -291,7 +291,7 @@
+ 
+     <style name="SimImportTheme" parent="@android:style/Theme.Material.Light">
+         <item name="android:actionBarStyle">@style/TelephonyActionBarStyle</item>
+-        <item name="android:colorPrimaryDark">@color/dialer_theme_color_dark</item>
++        <item name="android:colorPrimaryDark">@android:color/black</item>
+         <item name="android:homeAsUpIndicator">@drawable/ic_back_arrow</item>
+         <item name="android:actionOverflowButtonStyle">@style/DialtactsActionBarOverflow</item>
+     </style>

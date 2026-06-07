@@ -1,0 +1,30 @@
+diff --git a/arm-linux-androideabi/bin/as b/arm-linux-androideabi/bin/as
+index 3c8c5f1..8409e19 100755
+--- a/arm-linux-androideabi/bin/as
++++ b/arm-linux-androideabi/bin/as
+@@ -1,4 +1,4 @@
+-#! /usr/bin/python
++#!/usr/bin/env python
+ 
+ from sys import argv
+ from subprocess import check_call
+diff --git a/bin/arm-linux-androideabi-g++ b/bin/arm-linux-androideabi-g++
+index 54944a2..b65b3eb 100755
+--- a/bin/arm-linux-androideabi-g++
++++ b/bin/arm-linux-androideabi-g++
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/env python
+ 
+ import os
+ import sys
+diff --git a/bin/arm-linux-androideabi-gcc b/bin/arm-linux-androideabi-gcc
+index 54944a2..b65b3eb 100755
+--- a/bin/arm-linux-androideabi-gcc
++++ b/bin/arm-linux-androideabi-gcc
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/env python
+ 
+ import os
+ import sys

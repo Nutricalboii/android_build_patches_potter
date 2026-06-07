@@ -90,9 +90,9 @@ mka halium-boot
 - [x] Repository setup
 - [x] Kernel config patching (123 changes)
 - [x] Halium workspace initialization
-- [ ] Source sync (98% complete)
-- [ ] Build Halium boot image
-- [ ] Build system image
+- [x] Source sync (100% complete)
+- [x] Build Halium boot image (Successful)
+- [x] Build system image (Successful)
 - [ ] Flash & boot test
 - [ ] Ubuntu Touch rootfs integration
 

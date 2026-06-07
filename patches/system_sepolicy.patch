@@ -1,0 +1,57 @@
+diff --git a/build/file_utils.py b/build/file_utils.py
+index 1559a9b..afe2ed8 100644
+--- a/build/file_utils.py
++++ b/build/file_utils.py
+@@ -39,7 +39,7 @@ def filter_out(pattern_files, input_file):
+         patterns.extend(open(f).readlines())
+ 
+     # Copy lines that are not in the pattern.
+-    tmp_output = tempfile.NamedTemporaryFile()
++    tmp_output = tempfile.NamedTemporaryFile(mode='w+')
+     with open(input_file, 'r') as in_file:
+         tmp_output.writelines(line for line in in_file.readlines()
+                               if line not in patterns)
+diff --git a/tools/insertkeys.py b/tools/insertkeys.py
+index ca1e432..403a1c3 100755
+--- a/tools/insertkeys.py
++++ b/tools/insertkeys.py
+@@ -1,8 +1,8 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ 
+ from xml.sax import saxutils, handler, make_parser
+ from optparse import OptionParser
+-import ConfigParser
++import configparser as ConfigParser
+ import logging
+ import base64
+ import sys
+@@ -32,7 +32,7 @@ class GenerateKeys(object):
+         if not os.path.isfile(path):
+             sys.exit("Path " + path + " does not exist or is not a file!")
+ 
+-        pkFile = open(path, 'rb').readlines()
++        pkFile = open(path, 'r', encoding='utf-8').readlines()
+         base64Key = ""
+         lineNo = 1
+         certNo = 1
+@@ -79,7 +79,7 @@ class GenerateKeys(object):
+ 
+             # If we haven't started the certificate, then we should not encounter any data
+             elif not inCert:
+-                if line is not "":
++                if line != "":
+                     sys.exit("Detected erroneous line \""+ line + "\" on " + str(lineNo)
+                         + " in pem file: " + path)
+ 
+@@ -181,8 +181,8 @@ class ReplaceTags(handler.ContentHandler):
+ 
+             if name == ReplaceTags.SIGNATURE_TAG and value in self._keyMap:
+                 for key in self._keyMap[value].getBase16Keys():
+-                    logging.info("Replacing " + name + " " + value + " with " + key)
+-                    self._out.write(' %s="%s"' % (name, saxutils.escape(key)))
++                    logging.info("Replacing %s %s with %s" % (name, value, key.decode() if isinstance(key, bytes) else key))
++                    self._out.write(' %s="%s"' % (name, saxutils.escape(key.decode() if isinstance(key, bytes) else key)))
+             else:
+                 self._out.write(' %s="%s"' % (name, saxutils.escape(value)))
+ 

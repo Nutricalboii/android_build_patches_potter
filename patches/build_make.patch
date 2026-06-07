@@ -1,0 +1,648 @@
+diff --git a/tools/check_radio_versions.py b/tools/check_radio_versions.py
+index ebe621f466..ab6f37c6f5 100755
+--- a/tools/check_radio_versions.py
++++ b/tools/check_radio_versions.py
+@@ -52,8 +52,8 @@ for item in sys.argv[2:]:
+   try:
+     f = open(fn + ".sha1")
+   except IOError:
+-    if not bad: print
+-    print "*** Error opening \"%s.sha1\"; can't verify %s" % (fn, key)
++    if not bad: print()
++    print("*** Error opening \"%s.sha1\"; can't verify %s" % (fn, key))
+     bad = True
+     continue
+   for line in f:
+@@ -63,17 +63,17 @@ for item in sys.argv[2:]:
+     versions[h] = v
+ 
+   if digest not in versions:
+-    if not bad: print
+-    print "*** SHA-1 hash of \"%s\" doesn't appear in \"%s.sha1\"" % (fn, fn)
++    if not bad: print()
++    print("*** SHA-1 hash of \"%s\" doesn't appear in \"%s.sha1\"" % (fn, fn))
+     bad = True
+     continue
+ 
+   if versions[digest] not in values:
+-    if not bad: print
+-    print "*** \"%s\" is version %s; not any %s allowed by \"%s\"." % (
+-        fn, versions[digest], key, sys.argv[1])
++    if not bad: print()
++    print("*** \"%s\" is version %s; not any %s allowed by \"%s\"." % (
++        fn, versions[digest], key, sys.argv[1]))
+     bad = True
+ 
+ if bad:
+-  print
++  print()
+   sys.exit(1)
+diff --git a/tools/event_log_tags.py b/tools/event_log_tags.py
+index 645839ec29..70a7ce49d4 100644
+--- a/tools/event_log_tags.py
++++ b/tools/event_log_tags.py
+@@ -54,8 +54,8 @@ class TagFile(object):
+ 
+     if file_object is None:
+       try:
+-        file_object = open(filename, "rb")
+-      except (IOError, OSError), e:
++        file_object = open(filename, "r")
++      except (IOError, OSError) as e:
+         self.AddError(str(e))
+         return
+ 
+@@ -100,7 +100,7 @@ class TagFile(object):
+ 
+         self.tags.append(Tag(tag, tagname, description,
+                              self.filename, self.linenum))
+-    except (IOError, OSError), e:
++    except (IOError, OSError) as e:
+       self.AddError(str(e))
+ 
+ 
+@@ -127,9 +127,9 @@ def WriteOutput(output_file, data):
+       out = sys.stdout
+       output_file = "<stdout>"
+     else:
+-      out = open(output_file, "wb")
++      out = open(output_file, "w")
+     out.write(data)
+     out.close()
+-  except (IOError, OSError), e:
+-    print >> sys.stderr, "failed to write %s: %s" % (output_file, e)
++  except (IOError, OSError) as e:
++    print("failed to write %s: %s" % (output_file, e), file=sys.stderr)
+     sys.exit(1)
+diff --git a/tools/fileslist_util.py b/tools/fileslist_util.py
+index ff40d51a02..196951ab7a 100755
+--- a/tools/fileslist_util.py
++++ b/tools/fileslist_util.py
+@@ -27,7 +27,7 @@ def PrintCanonicalList(path):
+   with open(path) as jf:
+     data = json.load(jf)
+   for line in data:
+-    print "{0:12d}  {1}".format(line["Size"], line["Name"])
++    print("{0:12d}  {1}".format(line["Size"], line["Name"]))
+ 
+ def PrintUsage(name):
+   print("""
+@@ -39,7 +39,7 @@ Usage: %s -[nc] json_files_list
+ def main(argv):
+   try:
+     opts, args = getopt.getopt(argv[1:], "nc", "")
+-  except getopt.GetoptError, err:
++  except getopt.GetoptError as err:
+     print(err)
+     PrintUsage(argv[0])
+     sys.exit(2)
+diff --git a/tools/fs_config/fs_config_generator.py b/tools/fs_config/fs_config_generator.py
+index 1f6de80bff..cb6b65c1bf 100755
+--- a/tools/fs_config/fs_config_generator.py
++++ b/tools/fs_config/fs_config_generator.py
+@@ -1037,14 +1037,14 @@ class FSConfigGen(BaseGenerator):
+ 
+         expanded = fmt % (mode, user, group, caps, path)
+ 
+-        print FSConfigGen._FILE_COMMENT % fname
+-        print '    ' + expanded
++        print(FSConfigGen._FILE_COMMENT % fname)
++        print('    ' + expanded)
+ 
+     @staticmethod
+     def _gen_inc():
+         """Generate the include header lines and print to stdout."""
+         for include in FSConfigGen._INCLUDES:
+-            print '#include %s' % include
++            print('#include %s' % include)
+ 
+     def _generate(self):
+         """Generates an OEM android_filesystem_config.h header file to stdout.
+@@ -1055,7 +1055,7 @@ class FSConfigGen(BaseGenerator):
+                 entries.
+             aids ([AIDS]): A list of AID objects for Android Id entries.
+         """
+-        print FSConfigGen._GENERATED
++        print(FSConfigGen._GENERATED)
+         print
+ 
+         FSConfigGen._gen_inc()
+@@ -1072,39 +1072,39 @@ class FSConfigGen(BaseGenerator):
+         if are_aids:
+             for aid in aids:
+                 # use the preserved _path value
+-                print FSConfigGen._FILE_COMMENT % aid.found
+-                print FSConfigGen._GENERIC_DEFINE % (aid.identifier, aid.value)
++                print(FSConfigGen._FILE_COMMENT % aid.found)
++                print(FSConfigGen._GENERIC_DEFINE % (aid.identifier, aid.value))
+ 
+             print
+ 
+         if not are_dirs:
+-            print FSConfigGen._DEFINE_NO_DIRS + '\n'
++            print(FSConfigGen._DEFINE_NO_DIRS + '\n')
+ 
+         if not are_files:
+-            print FSConfigGen._DEFINE_NO_FILES + '\n'
++            print(FSConfigGen._DEFINE_NO_FILES + '\n')
+ 
+         if not are_files and not are_dirs and not are_aids:
+             return
+ 
+         if are_files:
+-            print FSConfigGen._OPEN_FILE_STRUCT
++            print(FSConfigGen._OPEN_FILE_STRUCT)
+             for fs_config in files:
+                 self._to_fs_entry(fs_config)
+ 
+             if not are_dirs:
+-                print FSConfigGen._IFDEF_ANDROID_FILESYSTEM_CONFIG_DEVICE_DIRS
++                print(FSConfigGen._IFDEF_ANDROID_FILESYSTEM_CONFIG_DEVICE_DIRS)
+                 print(
+                     '    ' +
+                     FSConfigGen._NO_ANDROID_FILESYSTEM_CONFIG_DEVICE_DIRS_ENTRY)
+-                print FSConfigGen._ENDIF
+-            print FSConfigGen._CLOSE_FILE_STRUCT
++                print(FSConfigGen._ENDIF)
++            print(FSConfigGen._CLOSE_FILE_STRUCT)
+ 
+         if are_dirs:
+-            print FSConfigGen._OPEN_DIR_STRUCT
++            print(FSConfigGen._OPEN_DIR_STRUCT)
+             for dir_entry in dirs:
+                 self._to_fs_entry(dir_entry)
+ 
+-            print FSConfigGen._CLOSE_FILE_STRUCT
++            print(FSConfigGen._CLOSE_FILE_STRUCT)
+ 
+ 
+ @generator('aidarray')
+@@ -1142,20 +1142,20 @@ class AIDArrayGen(BaseGenerator):
+ 
+         hdr = AIDHeaderParser(args['hdrfile'])
+ 
+-        print AIDArrayGen._GENERATED
++        print(AIDArrayGen._GENERATED)
+         print
+-        print AIDArrayGen._INCLUDE
++        print(AIDArrayGen._INCLUDE)
+         print
+-        print AIDArrayGen._STRUCT_FS_CONFIG
++        print(AIDArrayGen._STRUCT_FS_CONFIG)
+         print
+-        print AIDArrayGen._OPEN_ID_ARRAY
++        print(AIDArrayGen._OPEN_ID_ARRAY)
+ 
+         for aid in hdr.aids:
+-            print AIDArrayGen._ID_ENTRY % (aid.friendly, aid.identifier)
++            print(AIDArrayGen._ID_ENTRY % (aid.friendly, aid.identifier))
+ 
+-        print AIDArrayGen._CLOSE_FILE_STRUCT
++        print(AIDArrayGen._CLOSE_FILE_STRUCT)
+         print
+-        print AIDArrayGen._COUNT
++        print(AIDArrayGen._COUNT)
+         print
+ 
+ 
+@@ -1207,15 +1207,15 @@ class OEMAidGen(BaseGenerator):
+                                     hdr_parser.oem_ranges,
+                                     args['allow_legacy_aids'])
+ 
+-        print OEMAidGen._GENERATED
++        print(OEMAidGen._GENERATED)
+ 
+-        print OEMAidGen._FILE_IFNDEF_DEFINE
++        print(OEMAidGen._FILE_IFNDEF_DEFINE)
+ 
+         for aid in parser.aids:
+             self._print_aid(aid)
+             print
+ 
+-        print OEMAidGen._FILE_ENDIF
++        print(OEMAidGen._FILE_ENDIF)
+ 
+     def _print_aid(self, aid):
+         """Prints a valid #define AID identifier to stdout.
+@@ -1227,10 +1227,10 @@ class OEMAidGen(BaseGenerator):
+         # print the source file location of the AID
+         found_file = aid.found
+         if found_file != self._old_file:
+-            print OEMAidGen._FILE_COMMENT % found_file
++            print(OEMAidGen._FILE_COMMENT % found_file)
+             self._old_file = found_file
+ 
+-        print OEMAidGen._GENERIC_DEFINE % (aid.identifier, aid.value)
++        print(OEMAidGen._GENERIC_DEFINE % (aid.identifier, aid.value))
+ 
+ 
+ @generator('passwd')
+@@ -1310,7 +1310,7 @@ class PasswdGen(BaseGenerator):
+         except ValueError as exception:
+             sys.exit(exception)
+ 
+-        print "%s::%s:%s::/:/system/bin/sh" % (logon, uid, uid)
++        print("%s::%s:%s::/:/system/bin/sh" % (logon, uid, uid))
+ 
+ 
+ @generator('group')
+@@ -1335,7 +1335,7 @@ class GroupGen(PasswdGen):
+         except ValueError as exception:
+             sys.exit(exception)
+ 
+-        print "%s::%s:" % (logon, uid)
++        print("%s::%s:" % (logon, uid))
+ 
+ 
+ def main():
+diff --git a/tools/generate-notice-files.py b/tools/generate-notice-files.py
+index b754174a9f..787df49a99 100755
+--- a/tools/generate-notice-files.py
++++ b/tools/generate-notice-files.py
+@@ -42,6 +42,8 @@ HTML_ESCAPE_TABLE = {
+     }
+ 
+ def hexify(s):
++    if sys.version_info[0] >= 3:
++        return s.hex()
+     return ("%02x"*len(s)) % tuple(map(ord, s))
+ 
+ def md5sum(filename):
+@@ -88,15 +90,15 @@ def combine_notice_files_html(file_hash, input_dir, output_filename):
+         id_count += 1
+ 
+     # Open the output file, and output the header pieces
+-    output_file = open(output_filename, "wb")
++    output_file = open(output_filename, "w", encoding="utf-8")
+ 
+-    print >> output_file, "<html><head>"
+-    print >> output_file, HTML_OUTPUT_CSS
+-    print >> output_file, '</head><body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0">'
++    print("<html><head>", file=output_file)
++    print(HTML_OUTPUT_CSS, file=output_file)
++    print('</head><body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0">', file=output_file)
+ 
+     # Output our table of contents
+-    print >> output_file, '<div class="toc">'
+-    print >> output_file, "<ul>"
++    print('<div class="toc">', file=output_file)
++    print("<ul>", file=output_file)
+ 
+     # Flatten the list of lists into a single list of filenames
+     sorted_filenames = sorted(itertools.chain.from_iterable(file_hash))
+@@ -104,46 +106,45 @@ def combine_notice_files_html(file_hash, input_dir, output_filename):
+     # Print out a nice table of contents
+     for filename in sorted_filenames:
+         stripped_filename = SRC_DIR_STRIP_RE.sub(r"\1", filename)
+-        print >> output_file, '<li><a href="#id%d">%s</a></li>' % (id_table.get(filename), stripped_filename)
++        print('<li><a href="#id%d">%s</a></li>' % (id_table.get(filename), stripped_filename), file=output_file)
+ 
+-    print >> output_file, "</ul>"
+-    print >> output_file, "</div><!-- table of contents -->"
++    print("</ul>", file=output_file)
++    print("</div><!-- table of contents -->", file=output_file)
+     # Output the individual notice file lists
+-    print >>output_file, '<table cellpadding="0" cellspacing="0" border="0">'
++    print('<table cellpadding="0" cellspacing="0" border="0">', file=output_file)
+     for value in file_hash:
+-        print >> output_file, '<tr id="id%d"><td class="same-license">' % id_table.get(value[0])
+-        print >> output_file, '<div class="label">Notices for file(s):</div>'
+-        print >> output_file, '<div class="file-list">'
++        print('<tr id="id%d"><td class="same-license">' % id_table.get(value[0]), file=output_file)
++        print('<div class="label">Notices for file(s):</div>', file=output_file)
++        print('<div class="file-list">', file=output_file)
+         for filename in value:
+-            print >> output_file, "%s <br/>" % (SRC_DIR_STRIP_RE.sub(r"\1", filename))
+-        print >> output_file, "</div><!-- file-list -->"
+-        print >> output_file
+-        print >> output_file, '<pre class="license-text">'
+-        print >> output_file, html_escape(open(value[0]).read())
+-        print >> output_file, "</pre><!-- license-text -->"
+-        print >> output_file, "</td></tr><!-- same-license -->"
+-        print >> output_file
+-        print >> output_file
+-        print >> output_file
+-
++            print("%s <br/>" % (SRC_DIR_STRIP_RE.sub(r"\1", filename)), file=output_file)
++        print("</div><!-- file-list -->", file=output_file)
++        print("", file=output_file)
++        print('<pre class="license-text">', file=output_file)
++        print(html_escape(open(value[0], errors="replace").read()), file=output_file)
++        print("</pre><!-- license-text -->", file=output_file)
++        print("</td></tr><!-- same-license -->", file=output_file)
++        print("", file=output_file)
++        print("", file=output_file)
++        print("", file=output_file)
+     # Finish off the file output
+-    print >> output_file, "</table>"
+-    print >> output_file, "</body></html>"
++    print("</table>", file=output_file)
++    print("</body></html>", file=output_file)
+     output_file.close()
+ 
+ def combine_notice_files_text(file_hash, input_dir, output_filename, file_title):
+     """Combine notice files in FILE_HASH and output a text version to OUTPUT_FILENAME."""
+ 
+     SRC_DIR_STRIP_RE = re.compile(input_dir + "(/.*).txt")
+-    output_file = open(output_filename, "wb")
+-    print >> output_file, file_title
++    output_file = open(output_filename, "w", encoding="utf-8")
++    print(file_title, file=output_file)
+     for value in file_hash:
+-      print >> output_file, "============================================================"
+-      print >> output_file, "Notices for file(s):"
++      print("============================================================", file=output_file)
++      print("Notices for file(s):", file=output_file)
+       for filename in value:
+-        print >> output_file, SRC_DIR_STRIP_RE.sub(r"\1", filename)
+-      print >> output_file, "------------------------------------------------------------"
+-      print >> output_file, open(value[0]).read()
++        print(SRC_DIR_STRIP_RE.sub(r"\1", filename), file=output_file)
++      print("------------------------------------------------------------", file=output_file)
++      print(open(value[0], errors="replace").read(), file=output_file)
+     output_file.close()
+ 
+ def combine_notice_files_xml(files_with_same_hash, input_dir, output_filename):
+@@ -159,10 +160,10 @@ def combine_notice_files_xml(files_with_same_hash, input_dir, output_filename):
+              id_table[filename] = file_key
+ 
+     # Open the output file, and output the header pieces
+-    output_file = open(output_filename, "wb")
++    output_file = open(output_filename, "w", encoding="utf-8")
+ 
+-    print >> output_file, '<?xml version="1.0" encoding="utf-8"?>'
+-    print >> output_file, "<licenses>"
++    print('<?xml version="1.0" encoding="utf-8"?>', file=output_file)
++    print("<licenses>", file=output_file)
+ 
+     # Flatten the list of lists into a single list of filenames
+     sorted_filenames = sorted(id_table.keys())
+@@ -170,11 +171,10 @@ def combine_notice_files_xml(files_with_same_hash, input_dir, output_filename):
+     # Print out a nice table of contents
+     for filename in sorted_filenames:
+         stripped_filename = SRC_DIR_STRIP_RE.sub(r"\1", filename)
+-        print >> output_file, '<file-name contentId="%s">%s</file-name>' % (id_table.get(filename), stripped_filename)
+-
+-    print >> output_file
+-    print >> output_file
++        print('<file-name contentId="%s">%s</file-name>' % (id_table.get(filename), stripped_filename), file=output_file)
+ 
++    print("", file=output_file)
++    print("", file=output_file)
+     processed_file_keys = []
+     # Output the individual notice file lists
+     for filename in sorted_filenames:
+@@ -183,11 +183,10 @@ def combine_notice_files_xml(files_with_same_hash, input_dir, output_filename):
+             continue
+         processed_file_keys.append(file_key)
+ 
+-        print >> output_file, '<file-content contentId="%s"><![CDATA[%s]]></file-content>' % (file_key, html_escape(open(filename).read()))
+-        print >> output_file
+-
++        print('<file-content contentId="%s"><![CDATA[%s]]></file-content>' % (file_key, html_escape(open(filename, errors="replace").read())), file=output_file)
++        print("", file=output_file)
+     # Finish off the file output
+-    print >> output_file, "</licenses>"
++    print("</licenses>", file=output_file)
+     output_file.close()
+ 
+ def get_args():
+diff --git a/tools/java-event-log-tags.py b/tools/java-event-log-tags.py
+index 37cd71220f..955b8aadb4 100755
+--- a/tools/java-event-log-tags.py
++++ b/tools/java-event-log-tags.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ #
+ # Copyright (C) 2009 The Android Open Source Project
+ #
+@@ -23,7 +23,7 @@ tags in the given input file.
+ -h to display this usage message and exit.
+ """
+ 
+-import cStringIO
++import io as cStringIO
+ import getopt
+ import os
+ import os.path
+@@ -36,24 +36,24 @@ output_file = None
+ 
+ try:
+   opts, args = getopt.getopt(sys.argv[1:], "ho:")
+-except getopt.GetoptError, err:
+-  print str(err)
+-  print __doc__
++except getopt.GetoptError as err:
++  print(err)
++  print(__doc__)
+   sys.exit(2)
+ 
+ for o, a in opts:
+   if o == "-h":
+-    print __doc__
++    print(__doc__)
+     sys.exit(2)
+   elif o == "-o":
+     output_file = a
+   else:
+-    print >> sys.stderr, "unhandled option %s" % (o,)
++    print("unhandled option %s" % (o,), file=sys.stderr)
+     sys.exit(1)
+ 
+ if len(args) != 1 and len(args) != 2:
+-  print "need one or two input files, not %d" % (len(args),)
+-  print __doc__
++  print("need one or two input files, not %d" % (len(args),))
++  print(__doc__)
+   sys.exit(1)
+ 
+ fn = args[0]
+@@ -81,7 +81,7 @@ else:
+   # numbers
+   for t in tagfile.tags:
+     if t.tagnum is None:
+-      tagfilef.AddError("tag \"%s\" has no number" % (tagname,), tag.linenum)
++      tagfile.AddError("tag \"%s\" has no number" % (t.tagname,), t.linenum)
+ 
+ if "java_package" not in tagfile.options:
+   tagfile.AddError("java_package option not specified", linenum=0)
+@@ -92,7 +92,7 @@ if "javadoc_hide" in tagfile.options:
+ 
+ if tagfile.errors:
+   for fn, ln, msg in tagfile.errors:
+-    print >> sys.stderr, "%s:%d: error: %s" % (fn, ln, msg)
++    print("%s:%d: error: %s" % (fn, ln, msg), file=sys.stderr)
+   sys.exit(1)
+ 
+ buffer = cStringIO.StringIO()
+diff --git a/tools/merge-event-log-tags.py b/tools/merge-event-log-tags.py
+index 64bad3f813..8a55499ae8 100755
+--- a/tools/merge-event-log-tags.py
++++ b/tools/merge-event-log-tags.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ #
+ # Copyright (C) 2009 The Android Open Source Project
+ #
+@@ -24,7 +24,7 @@ and fails if they do.
+ -h to display this usage message and exit.
+ """
+ 
+-import cStringIO
++import io as cStringIO
+ import getopt
+ try:
+   import hashlib
+@@ -48,21 +48,21 @@ ASSIGN_LIMIT = 1000000
+ 
+ try:
+   opts, args = getopt.getopt(sys.argv[1:], "ho:m:")
+-except getopt.GetoptError, err:
+-  print str(err)
+-  print __doc__
++except getopt.GetoptError as err:
++  print(str(err))
++  print(__doc__)
+   sys.exit(2)
+ 
+ for o, a in opts:
+   if o == "-h":
+-    print __doc__
++    print(__doc__)
+     sys.exit(2)
+   elif o == "-o":
+     output_file = a
+   elif o == "-m":
+     pre_merged_file = a
+   else:
+-    print >> sys.stderr, "unhandled option %s" % (o,)
++    print("unhandled option %s" % (o,), file=sys.stderr)
+     sys.exit(1)
+ 
+ # Restrictions on tags:
+@@ -133,18 +133,18 @@ for fn in args:
+ 
+ if errors:
+   for fn, ln, msg in errors:
+-    print >> sys.stderr, "%s:%d: error: %s" % (fn, ln, msg)
++    print("%s:%d: error: %s" % (fn, ln, msg), file=sys.stderr)
+   sys.exit(1)
+ 
+ if warnings:
+   for fn, ln, msg in warnings:
+-    print >> sys.stderr, "%s:%d: warning: %s" % (fn, ln, msg)
++    print("%s:%d: warning: %s" % (fn, ln, msg), file=sys.stderr)
+ 
+ # Python's hash function (a) isn't great and (b) varies between
+ # versions of python.  Using md5 is overkill here but is the same from
+ # platform to platform and speed shouldn't matter in practice.
+-def hashname(str):
+-  d = hashlib.md5(str).digest()[:4]
++def hashname(s):
++  d = hashlib.md5(s.encode('utf-8')).digest()[:4]
+   return struct.unpack("!I", d)[0]
+ 
+ # Assign a tag number to all the entries that say they want one
+@@ -154,14 +154,13 @@ def hashname(str):
+ # If we were provided pre-merged tags (w/ the -m option), then don't
+ # ever try to allocate one, just fail if we don't have a number
+ 
+-for name, t in sorted(by_tagname.iteritems()):
++for name, t in sorted(by_tagname.items()):
+   if t.tagnum is None:
+     if pre_merged_tags:
+       try:
+-        t.tagnum = pre_merged_tags[t.tagname]
++        t.tagnum = pre_merged_tags[t.tagname].tagnum
+       except KeyError:
+-        print >> sys.stderr, ("Error: Tag number not defined for tag `%s'."
+-            +" Have you done a full build?") % t.tagname
++        print("Error: Tag number not defined for tag `%s'. Have you done a full build?" % t.tagname, file=sys.stderr)
+         sys.exit(1)
+     else:
+       while True:
+@@ -175,7 +174,7 @@ for name, t in sorted(by_tagname.iteritems()):
+ # by_tagnum should be complete now; we've assigned numbers to all tags.
+ 
+ buffer = cStringIO.StringIO()
+-for n, t in sorted(by_tagnum.iteritems()):
++for n, t in sorted(by_tagnum.items()):
+   if t.description:
+     buffer.write("%d %s %s\n" % (t.tagnum, t.tagname, t.description))
+   else:
+diff --git a/tools/normalize_path.py b/tools/normalize_path.py
+index 6c4d5486dc..7e5cc15cad 100755
+--- a/tools/normalize_path.py
++++ b/tools/normalize_path.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ #
+ # Copyright (C) 2015 The Android Open Source Project
+ #
+@@ -22,8 +22,8 @@ import sys
+ 
+ if len(sys.argv) > 1:
+   for p in sys.argv[1:]:
+-    print os.path.normpath(p)
++    print(os.path.normpath(p))
+   sys.exit(0)
+ 
+ for line in sys.stdin:
+-  print os.path.normpath(line.strip())
++    print(os.path.normpath(line.strip()))
+diff --git a/tools/post_process_props.py b/tools/post_process_props.py
+index 45a46caf3c..ea89bd4db7 100755
+--- a/tools/post_process_props.py
++++ b/tools/post_process_props.py
+@@ -62,7 +62,7 @@ def validate(prop):
+   """
+   check_pass = True
+   buildprops = prop.to_dict()
+-  for key, value in buildprops.iteritems():
++  for key, value in buildprops.items():
+     # Check build properties' length.
+     if len(value) > PROP_VALUE_MAX and not key.startswith("ro."):
+       check_pass = False
+diff --git a/tools/releasetools/common.py b/tools/releasetools/common.py
+index f7ab11cd84..f678bb4fba 100644
+--- a/tools/releasetools/common.py
++++ b/tools/releasetools/common.py
+@@ -19,7 +19,7 @@ import errno
+ import getopt
+ import getpass
+ import gzip
+-import imp
++import importlib.util
+ import os
+ import platform
+ import re
+@@ -1329,17 +1329,18 @@ class DeviceSpecificParams(object):
+       if not path:
+         return
+       try:
++        import importlib.util
+         if os.path.isdir(path):
+-          info = imp.find_module("releasetools", [path])
++          module_path = os.path.join(path, "releasetools.py")
+         else:
+-          d, f = os.path.split(path)
+-          b, x = os.path.splitext(f)
+-          if x == ".py":
+-            f = b
+-          info = imp.find_module(f, [d])
++          module_path = path
++        spec = importlib.util.spec_from_file_location("device_specific", module_path)
++        if spec is None:
++          raise ImportError("Cannot find module at " + module_path)
++        self.module = importlib.util.module_from_spec(spec)
++        spec.loader.exec_module(self.module)
+         print("loaded device-specific extensions from", path)
+-        self.module = imp.load_module("device_specific", *info)
+-      except ImportError:
++      except Exception:
+         print("unable to load device-specific module; assuming none")
+ 
+   def _DoCall(self, function_name, *args, **kwargs):

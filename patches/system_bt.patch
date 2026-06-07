@@ -1,0 +1,14 @@
+diff --git a/osi/include/properties.h b/osi/include/properties.h
+index b186f4f..c59a642 100644
+--- a/osi/include/properties.h
++++ b/osi/include/properties.h
+@@ -20,7 +20,9 @@
+ 
+ #include <cstdint>
+ 
++#ifndef PROPERTY_VALUE_MAX
+ #define PROPERTY_VALUE_MAX 92
++#endif
+ #define BUILD_SANITY_PROPERTY_VALUE_MAX 92
+ 
+ // Get value associated with key |key| into |value|.

@@ -1,0 +1,20 @@
+diff --git a/clang-3289846/bin/clang b/clang-3289846/bin/clang
+index 2091f1d..82ff353 100755
+--- a/clang-3289846/bin/clang
++++ b/clang-3289846/bin/clang
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/env python
+ 
+ import os
+ import sys
+diff --git a/clang-3289846/bin/clang++ b/clang-3289846/bin/clang++
+index 2091f1d..82ff353 100755
+--- a/clang-3289846/bin/clang++
++++ b/clang-3289846/bin/clang++
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/env python
+ 
+ import os
+ import sys

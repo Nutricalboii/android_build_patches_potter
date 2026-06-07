@@ -1,0 +1,117 @@
+diff --git a/tools/js2c.py b/tools/js2c.py
+index b676d66..8b5c950 100755
+--- a/tools/js2c.py
++++ b/tools/js2c.py
+@@ -35,7 +35,7 @@ import os, re
+ import optparse
+ import jsmin
+ import textwrap
+-
++from functools import reduce
+ 
+ class Error(Exception):
+   def __init__(self, msg):
+@@ -43,11 +43,12 @@ class Error(Exception):
+ 
+ 
+ def ToCArray(byte_sequence):
+-  result = []
+-  for chr in byte_sequence:
+-    result.append(str(ord(chr)))
+-  joined = ", ".join(result)
+-  return textwrap.fill(joined, 80)
++    result = []
++    for c in byte_sequence:
++        result.append(str(ord(c)))
++    joined = ", ".join(result)
++    return textwrap.fill(joined, 80)
++
+ 
+ 
+ def RemoveCommentsAndTrailingWhitespace(lines):
+@@ -147,7 +148,7 @@ class TextMacro:
+   def expand(self, mapping):
+     # Keys could be substrings of earlier values. To avoid unintended
+     # clobbering, apply all replacements simultaneously.
+-    any_key_pattern = "|".join(re.escape(k) for k in mapping.iterkeys())
++    any_key_pattern = "|".join(re.escape(k) for k in mapping.keys())
+     def replace(match):
+       return mapping[match.group(0)]
+     return re.sub(any_key_pattern, replace, self.body)
+@@ -174,7 +175,7 @@ def ReadMacros(lines):
+     hash = line.find('#')
+     if hash != -1: line = line[:hash]
+     line = line.strip()
+-    if len(line) is 0: continue
++    if len(line) == 0: continue
+     const_match = CONST_PATTERN.match(line)
+     if const_match:
+       name = const_match.group(1)
+@@ -405,14 +406,14 @@ def PrepareSources(source_files, native_type, emit_js):
+     An instance of Sources.
+   """
+   macro_file = None
+-  macro_files = filter(IsMacroFile, source_files)
++  macro_files = list(filter(IsMacroFile, source_files))
+   assert len(macro_files) in [0, 1]
+   if macro_files:
+     source_files.remove(macro_files[0])
+     macro_file = macro_files[0]
+ 
+   message_template_file = None
+-  message_template_files = filter(IsMessageTemplateFile, source_files)
++  message_template_files = list(filter(IsMessageTemplateFile, source_files))
+   assert len(message_template_files) in [0, 1]
+   if message_template_files:
+     source_files.remove(message_template_files[0])
+@@ -425,8 +426,7 @@ def PrepareSources(source_files, native_type, emit_js):
+     filters = BuildFilterChain(macro_file, message_template_file)
+ 
+   # Sort 'debugger' sources first.
+-  source_files = sorted(source_files,
+-                        lambda l,r: IsDebuggerFile(r) - IsDebuggerFile(l))
++  source_files = sorted(source_files, key=lambda f: not IsDebuggerFile(f))
+ 
+   source_files_and_contents = [(f, ReadFile(f)) for f in source_files]
+ 
+@@ -472,14 +472,14 @@ def BuildMetadata(sources, source_bytes, native_type):
+   raw_sources = "".join(sources.modules)
+ 
+   # The sources are expected to be ASCII-only.
+-  assert not filter(lambda value: ord(value) >= 128, raw_sources)
++  assert not any(ord(value) >= 128 for value in raw_sources)
+ 
+   # Loop over modules and build up indices into the source blob:
+   get_index_cases = []
+   get_script_name_cases = []
+   get_script_source_cases = []
+   offset = 0
+-  for i in xrange(len(sources.modules)):
++  for i in range(len(sources.modules)):
+     native_name = "native %s.js" % sources.names[i]
+     d = {
+         "i": i,
+@@ -521,7 +521,7 @@ def PutInt(blob_file, value):
+   value_with_length = (value << 2) | (size - 1)
+ 
+   byte_sequence = bytearray()
+-  for i in xrange(size):
++  for i in range(size):
+     byte_sequence.append(value_with_length & 255)
+     value_with_length >>= 8;
+   blob_file.write(byte_sequence)
+@@ -544,12 +544,12 @@ def WriteStartupBlob(sources, startup_blob):
+ 
+   debug_sources = sum(sources.is_debugger_id);
+   PutInt(output, debug_sources)
+-  for i in xrange(debug_sources):
++  for i in range(debug_sources):
+     PutStr(output, sources.names[i]);
+     PutStr(output, sources.modules[i]);
+ 
+   PutInt(output, len(sources.names) - debug_sources)
+-  for i in xrange(debug_sources, len(sources.names)):
++  for i in range(debug_sources, len(sources.names)):
+     PutStr(output, sources.names[i]);
+     PutStr(output, sources.modules[i]);
+ 

@@ -1,0 +1,33 @@
+diff --git a/annotations/generate_annotated_java_files.py b/annotations/generate_annotated_java_files.py
+index 2f12eea..4c2d5d9 100755
+--- a/annotations/generate_annotated_java_files.py
++++ b/annotations/generate_annotated_java_files.py
+@@ -1,7 +1,8 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ 
+ """Generate annotated_java_files.bp from a jaif file."""
+ import os
++import sys
+ 
+ PACKAGE_STRING = 'package '
+ CLASS_STRING = 'class '
+@@ -17,7 +18,7 @@ BP_TEMPLATE = '''filegroup {
+ 
+ srcs_list = set()
+ current_package = None
+-with open(os.sys.argv[1], 'r') as jaif_file:
++with open(sys.argv[1], 'r') as jaif_file:
+   for line in jaif_file:
+     if line.startswith(PACKAGE_STRING):
+       current_package = line[len(PACKAGE_STRING): line.find(':')]
+@@ -31,6 +32,6 @@ with open(os.sys.argv[1], 'r') as jaif_file:
+ 
+       srcs_list.add(SRC_PREFIX + current_package.replace('.', '/') + '/' + current_class + '.java')
+ 
+-print '// Do not edit; generated using libcore/annotations/generate_annotated_java_files.py'
+-print BP_TEMPLATE % ('\n'.join(['        "' + src_entry + '",' for src_entry in sorted(srcs_list)]),)
+-os.sys.exit(0)
++print('// Do not edit; generated using libcore/annotations/generate_annotated_java_files.py')
++print(BP_TEMPLATE % ('\n'.join(['        "' + src_entry + '",' for src_entry in sorted(srcs_list)]),))
++sys.exit(0)
