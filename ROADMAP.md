@@ -688,6 +688,27 @@ devicename=potter
 - **Fix**: Increased `BOARD_RECOVERYIMAGE_PARTITION_SIZE` to 32MB in `BoardConfig.mk`.
 - **Status**: ✅ Resolved
 
+### Issue 11: Charger Mode After Boot Fix
+- **Symptom**: Device boots past "device can't be trusted" but shows black screen, enters charger mode
+- **Cause**: Motorola bootloader passes `ro.boot.mode=charger` on kernel cmdline
+- **Evidence**: `last_kmsg.txt` shows `healthd: battery none chg=` repeating, no display driver messages
+- **Fix**: Add `androidboot.bootmode=normal` to BOARD_KERNEL_CMDLINE in BoardConfig.mk (line 48)
+- **Status**: 🟡 Identified, needs implementation
+
+### Issue 12: Black Screen / Display Not Working
+- **Symptom**: Device shows black screen even after charger mode fix
+- **Cause**: Display driver (DRM/MDSS) not loading - no messages in last_kmsg.txt
+- **Evidence**: No `drm`, `mdss`, `msm_drm` in kernel log
+- **Fix**: Check kernel config for `CONFIG_DRM_MSM=y`, `CONFIG_FB_MSM_MDSS=y`
+- **Status**: 🟡 Identified, needs investigation
+
+### Issue 13: No Halium system.img on /system
+- **Symptom**: `/system/build.prop` and all property files missing
+- **Cause**: /system partition still has stock Android, not Halium system image
+- **Evidence**: `init: Couldn't load property file '/system/build.prop': No such file or directory`
+- **Fix**: Flash Halium system.img to /dev/block/mmcblk0p53 via TWRP
+- **Status**: 🟡 Identified, system.img built, needs flash
+
 ---
 
 ## 📚 Key Concepts Explained
@@ -802,11 +823,15 @@ gantt
     section Phase 4
     Halium Workspace Verify   :done, p4, after p3c, 1d
     section Phase 5
-    Build Halium              :done, p5, after p4, 2d
+    Build Halium Boot         :done, p5, after p4, 2d
+    Build system.img          :done, p5b, after p5, 1d
+    Fix Console Boot Loop     :done, p5c, after p5b, 1d
     section Phase 6
-    Flash & Boot Test         :active, p6, after p5, 1d
+    Fix Charger Mode          :active, p6, after p5c, 1d
+    Fix Display Driver        :p6b, after p6, 1d
+    Flash & Boot Test         :p6c, after p6b, 1d
     section Phase 7
-    Ubuntu Touch Integration  :p7, after p6, 3d
+    Ubuntu Touch Integration  :p7, after p6c, 3d
 ```
 
 ---
@@ -817,9 +842,10 @@ gantt
 |---|---|---|
 | [android_build_patches_potter](https://github.com/Nutricalboii/android_build_patches_potter) | `main` | Build patches, manifests, scripts |
 | [android_kernel_motorola_msm8953](https://github.com/Nutricalboii/android_kernel_motorola_msm8953) | `halium-9.0` | Patched kernel source |
+| [android_device_motorola_potter](https://github.com/Nutricalboii/android_device_motorola_potter) | `halium-9.0` | Device tree config |
 | [Halium/android](https://github.com/Halium/android) | `halium-9.0` | Halium source manifest |
 | [UBports](https://github.com/ubports) | - | Ubuntu Touch projects |
 
 ---
 
-*Last Updated: June 2026 | Author: Vaibhav Sharma (@Nutricalboii)*
+*Last Updated: June 11, 2026 | Author: Vaibhav Sharma (@Nutricalboii)*
