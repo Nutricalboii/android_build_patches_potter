@@ -165,101 +165,81 @@ df -h /
 - [x] Excluded invalid dummy proprietary `.apk`/`.jar` stubs.
 - [x] Resolved fake `libril` prebuilt linkage and GPS Loc core logging reference errors.
 - [x] Injected XML configs to pass verification and compiled `system.img` successfully.
+- [x] Flashed system.img (621MB) to system partition (mmcblk0p53).
+
+### [DONE] Phase 6B — Rootfs Preparation
+- [x] Downloaded UBports rootfs: ubuntu-touch-android9-armhf.tar.gz (546MB)
+- [x] Extracted rootfs, confirmed /sbin/init exists, proper structure
+- [x] Created rootfs.img (1804MB ext4) at /tmp/rootfs.img
+- [x] Fixed Python 3.14 compat issue in halium/system/sepolicy/build/file_utils.py
+- [x] Fixed charger mode: added androidboot.bootmode=normal to BOARD_KERNEL_CMDLINE
+- [x] Added panic=10, datapart=/dev/block/bootdevice/by-name/userdata, systempart=/dev/block/bootdevice/by-name/system
 
 ---
 
 ## 🔄 Current State (June 11, 2026)
 
 ```
-BUILD STATUS: halium-boot.img + system.img BUILT
+BUILD STATUS: halium-boot.img + system.img BUILT AND FLASHED
 BOOT STATUS: Kernel boots successfully (no more "device can't be trusted")
-ISSUE: Device stuck in charger mode / black screen
-NEXT: Add androidboot.bootmode=normal + rebuild + flash
+ROOT CAUSE: Black screen caused by missing rootfs.img on userdata partition
+NEXT: Flash rootfs.img to userdata partition, reboot, test
 ```
 
 ### What Works
-- Kernel boots successfully (console fix applied)
-- halium-boot.img built and valid (15.5MB)
-- system.img built successfully
-- Android init runs from ramdisk
-- USB gadget configured
+- Kernel boots successfully (charger mode fixed)
+- halium-boot.img flashed to boot partition
+- system.img (621MB) flashed to system partition
+- rootfs.img created (1804MB) at /tmp/rootfs.img
+- Charger mode fixed (androidboot.bootmode=normal)
 
 ### What's Broken
-1. Charger mode (bootloader passes bootmode=charger)
-2. Black screen (display driver not loading)
-3. /system still has stock Android (not Halium)
-4. No /lib/modules in ramdisk
+1. **Black screen** - initramfs panics without rootfs.img on userdata
+2. **Display driver** - CONFIG_FB_MSM_MDP not set, CONFIG_FRAMEBUFFER_CONSOLE not set
+3. **Build system** - Python 3.14 compat + TeleService resource errors
+4. **Serial console** - CONFIG_SERIAL_MSM_HSL not set
 
 ---
 
 ## 📋 Next Steps (In Order — Do Not Skip)
 
-### Step 1: Fix Charger Mode (TODAY)
+### Step 1: Flash rootfs.img (TODAY)
 ```bash
-# Add androidboot.bootmode=normal to force normal boot
-cd /home/vaibhavpandit/potter-ut/halium/device/motorola/potter
-# Edit BoardConfig.mk line 48:
-# BOARD_KERNEL_CMDLINE := androidboot.bootmode=normal console=tty0 ...
-```
+# Device must be in fastboot mode
+fastboot flash userdata /tmp/rootfs.img
 
-### Step 2: Rebuild Boot Image (TODAY)
-```bash
-cd /home/vaibhavpandit/potter-ut/halium
-source build/envsetup.sh && breakfast potter
-mka halium-boot
-```
-
-### Step 3: Flash via TWRP (TODAY)
-```bash
-# Boot TWRP
+# If too large, use TWRP:
 fastboot boot recovery.img
-
-# Flash boot image
-adb push out/target/product/potter/halium-boot.img /tmp/
-adb shell "dd if=/tmp/halium-boot.img of=/dev/block/mmcblk0p37 bs=4M"
+adb push /tmp/rootfs.img /tmp/
+adb shell "dd if=/tmp/rootfs.img of=/dev/block/mmcblk0p54 bs=4M"
 adb shell "sync"
 adb reboot
 ```
 
-### Step 4: Test Boot
+### Step 2: Test Boot
 ```bash
-adb devices
+adb wait-for-device
 adb shell dmesg | tail -50
 adb shell ps | grep -E "init|surfaceflinger|zygote"
 ```
 
-### Step 5: If Still Black Screen - Check Display Driver
+### Step 3: If Still Black Screen - Fix Display Driver
 ```bash
 # Check kernel config for display driver
-grep -E "DRM|MDSS|MSM_DSM|FRAMEBUFFER" \
+grep -E "FB_MSM_MDP|FRAMEBUFFER_CONSOLE" \
     kernel/motorola/msm8953/arch/arm64/configs/potter_defconfig
 
-# Should have:
-# CONFIG_DRM_MSM=y
-# CONFIG_DRM_MSM_DSI=y
-# CONFIG_FB_MSM_MDSS=y
+# Need to add:
+# CONFIG_FB_MSM_MDP=y
+# CONFIG_FRAMEBUFFER_CONSOLE=y
 ```
 
-### Step 6: Flash Halium system.img
+### Step 4: If Build System Issues
 ```bash
-# Flash via TWRP:
-fastboot boot recovery.img
-adb push out/target/product/potter/system.img /tmp/
-adb shell "dd if=/tmp/system.img of=/dev/block/mmcblk0p53 bs=4M"
-adb shell "sync"
-adb reboot
+# Python 3.14 compat issues in TeleService
+# Check halium/system/sepolicy/build/file_utils.py
+# May need to fix additional Python 3.14 deprecations
 ```
-
-### Step 7: Test Halium Boot
-```bash
-adb wait-for-device
-adb shell getprop ro.halium.version
-adb shell ps | grep -E "surfaceflinger|audioserver"
-```
-
-### Step 8: Install Ubuntu Touch Rootfs
-After confirming Halium boots successfully, install the Ubuntu Touch rootfs
-using the UBports installer or manually via TWRP.
 
 ---
 
@@ -299,6 +279,7 @@ git -C /home/vaibhavpandit/potter-ut/android_kernel_motorola_msm8953 push origin
 
 # Flash device (device must be in fastboot mode)
 fastboot flash boot out/target/product/potter/halium-boot.img
+fastboot flash userdata /tmp/rootfs.img
 ```
 
 ---
@@ -329,9 +310,11 @@ Ubuntu Touch Apps
 | Artifact | Path | Notes |
 |---|---|---|
 | Kernel defconfig | `kernel/motorola/msm8953/arch/arm64/configs/potter_defconfig` | 123 patches applied |
-| Halium boot image | `out/target/product/potter/halium-boot.img` | Built by `mka halium-boot` |
-| System image | `out/target/product/potter/system.img` | Built by `mka systemimage` |
+| Halium boot image | `out/target/product/potter/halium-boot.img` | Built by `mka halium-boot`, flashed |
+| System image | `out/target/product/potter/system.img` | Built by `mka systemimage`, flashed (621MB) |
 | Vendor image | `out/target/product/potter/vendor.img` | Auto-generated |
+| rootfs.img | `/tmp/rootfs.img` | 1804MB ext4, ready to flash |
+| UBports rootfs | Downloaded from ci.ubports.com | 546MB compressed |
 
 ---
 
@@ -353,5 +336,5 @@ feature branches. Use releases/tags to mark major milestones (e.g., `v0.1-kernel
 
 ---
 
-*This file is auto-maintained. Last updated: June 6, 2026.*
+*This file is auto-maintained. Last updated: June 11, 2026.*
 *Active Conversation ID: 8d33727b-ff98-4221-bddd-d4029d2c3ef9*

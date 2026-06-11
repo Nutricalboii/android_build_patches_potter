@@ -459,7 +459,7 @@ TARGET_2ND_ARCH := arm
 TARGET_2ND_CPU_VARIANT := cortex-a53
 
 # Kernel
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0
+BOARD_KERNEL_CMDLINE := androidboot.bootmode=normal panic=10 console=tty0 androidboot.hardware=qcom user_debug=30 msm_rtb.filter=0x237 androidboot.selinux=permissive datapart=/dev/block/bootdevice/by-name/userdata systempart=/dev/block/bootdevice/by-name/system
 TARGET_KERNEL_CONFIG := potter_defconfig
 TARGET_KERNEL_SOURCE := kernel/motorola/msm8953
 
@@ -551,6 +551,9 @@ fastboot flash boot out/target/product/potter/halium-boot.img
 # Flash the system image  
 fastboot flash system out/target/product/potter/system.img
 
+# Flash the rootfs image
+fastboot flash userdata /tmp/rootfs.img
+
 # Reboot
 fastboot reboot
 ```
@@ -563,6 +566,7 @@ fastboot boot twrp.img
 
 # In TWRP: Flash system.img to /system partition
 # In TWRP: Flash boot.img to /boot partition
+# In TWRP: Flash rootfs.img to /userdata partition
 ```
 
 ### 6.3 Boot Verification
@@ -688,26 +692,47 @@ devicename=potter
 - **Fix**: Increased `BOARD_RECOVERYIMAGE_PARTITION_SIZE` to 32MB in `BoardConfig.mk`.
 - **Status**: ✅ Resolved
 
-### Issue 11: Charger Mode After Boot Fix
+### Issue 11: Boot Loop — Console Parameters
+- **Symptom**: Device stuck on "device can't be trusted" boot loop
+- **Root Cause**: console=ttyHSL0 parameters in kernel cmdline interfere with bootloader verification
+- **Solution**: Removed console parameters from BOARD_KERNEL_CMDLINE
+- **Commit**: 9637fcb
+- **Status**: ✅ Resolved
+
+### Issue 12: Charger Mode After Boot Fix
 - **Symptom**: Device boots past "device can't be trusted" but shows black screen, enters charger mode
 - **Cause**: Motorola bootloader passes `ro.boot.mode=charger` on kernel cmdline
 - **Evidence**: `last_kmsg.txt` shows `healthd: battery none chg=` repeating, no display driver messages
-- **Fix**: Add `androidboot.bootmode=normal` to BOARD_KERNEL_CMDLINE in BoardConfig.mk (line 48)
-- **Status**: 🟡 Identified, needs implementation
+- **Fix**: Added `androidboot.bootmode=normal` to BOARD_KERNEL_CMDLINE in BoardConfig.mk (line 48)
+- **Status**: ✅ Resolved
 
-### Issue 12: Black Screen / Display Not Working
-- **Symptom**: Device shows black screen even after charger mode fix
-- **Cause**: Display driver (DRM/MDSS) not loading - no messages in last_kmsg.txt
-- **Evidence**: No `drm`, `mdss`, `msm_drm` in kernel log
-- **Fix**: Check kernel config for `CONFIG_DRM_MSM=y`, `CONFIG_FB_MSM_MDSS=y`
-- **Status**: 🟡 Identified, needs investigation
+### Issue 13: Black Screen — Missing rootfs.img (ROOT CAUSE)
+- **Symptom**: Device shows black screen, initramfs panics with "No init found"
+- **Cause**: halium initramfs needs rootfs.img on userdata partition. Without it, initramfs panics because system partition only has Android apps/framework, not a Linux rootfs with /sbin/init
+- **Evidence**: Kernel panic → "No init found" → reboot/hang
+- **Fix**: Created rootfs.img (1804MB ext4) at /tmp/rootfs.img from UBports rootfs
+- **Rootfs Source**: ubuntu-touch-android9-armhf.tar.gz (546MB) from ci.ubports.com
+- **Status**: 🟡 In Progress — rootfs.img created, needs flashing to userdata
 
-### Issue 13: No Halium system.img on /system
-- **Symptom**: `/system/build.prop` and all property files missing
-- **Cause**: /system partition still has stock Android, not Halium system image
-- **Evidence**: `init: Couldn't load property file '/system/build.prop': No such file or directory`
-- **Fix**: Flash Halium system.img to /dev/block/mmcblk0p53 via TWRP
-- **Status**: 🟡 Identified, system.img built, needs flash
+### Issue 14: Display Driver Not Working
+- **Symptom**: Blue/black screen, no display output
+- **Cause**: CONFIG_FB_MSM_MDP not set, CONFIG_FRAMEBUFFER_CONSOLE not set
+- **Evidence**: No DRM/MDSS messages in kernel log
+- **Fix**: Enable in kernel config: `CONFIG_FB_MSM_MDP=y`, `CONFIG_FRAMEBUFFER_CONSOLE=y`
+- **Status**: 🟡 Open — needs kernel config update
+
+### Issue 15: Build System Broken — Python 3.14 Compat
+- **Symptom**: Can't rebuild system.img due to Python 3.14 compatibility issues
+- **Cause**: Python 3.14 deprecations + TeleService resource errors
+- **Evidence**: Build fails on TeleService compilation
+- **Fix**: Need to fix additional Python 3.14 compat issues in build system
+- **Status**: 🟡 Open — system.img from Jun 8 still works
+
+### Issue 16: Serial Console Disabled
+- **Symptom**: Can't see kernel output on serial port
+- **Cause**: CONFIG_SERIAL_MSM_HSL not set
+- **Fix**: Enable in kernel config: `CONFIG_SERIAL_MSM_HSL=y`
+- **Status**: 🟡 Open — needs kernel config update
 
 ---
 
@@ -753,6 +778,13 @@ inside an LXC container.
 logical workspace. It reads a `manifest.xml` that describes which repos to clone,
 where to put them, and which branch/commit to check out.
 
+### What is rootfs.img?
+
+`rootfs.img` is an ext4 disk image containing the Ubuntu Touch base system (Ubuntu Touch
+rootfs). It provides /sbin/init, systemd, and core utilities. The halium initramfs
+expects to find this on the userdata partition. Without it, the initramfs panics with
+"No init found".
+
 ---
 
 ## 🛠️ Tools & Commands Reference
@@ -774,6 +806,7 @@ fastboot devices                  # List connected devices
 fastboot getvar all               # Get all device variables
 fastboot flash boot boot.img      # Flash boot partition
 fastboot flash system system.img  # Flash system partition
+fastboot flash userdata rootfs.img # Flash rootfs to userdata
 fastboot oem fb_mode_clear        # Clear fastboot mode UTAG
 fastboot reboot                   # Reboot device
 ```
@@ -827,11 +860,12 @@ gantt
     Build system.img          :done, p5b, after p5, 1d
     Fix Console Boot Loop     :done, p5c, after p5b, 1d
     section Phase 6
-    Fix Charger Mode          :active, p6, after p5c, 1d
-    Fix Display Driver        :p6b, after p6, 1d
-    Flash & Boot Test         :p6c, after p6b, 1d
+    Fix Charger Mode          :done, p6, after p5c, 1d
+    Create rootfs.img         :done, p6b, after p6, 1d
+    Flash rootfs.img          :active, p6c, after p6b, 1d
+    Fix Display Driver        :p6d, after p6c, 1d
     section Phase 7
-    Ubuntu Touch Integration  :p7, after p6c, 3d
+    Ubuntu Touch Integration  :p7, after p6d, 3d
 ```
 
 ---
