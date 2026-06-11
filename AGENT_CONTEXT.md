@@ -168,42 +168,98 @@ df -h /
 
 ---
 
-## 🔄 Current State (June 8, 2026)
+## 🔄 Current State (June 11, 2026)
 
 ```
-BUILD STATUS: 100% Complete — both halium-boot.img and system.img are compiled!
-GITHUB STATUS: All device, kernel, vendor trees, and build patches pushed to GitHub.
+BUILD STATUS: halium-boot.img + system.img BUILT
+BOOT STATUS: Kernel boots successfully (no more "device can't be trusted")
+ISSUE: Device stuck in charger mode / black screen
+NEXT: Add androidboot.bootmode=normal + rebuild + flash
 ```
 
-The ROM workspace is fully compiled and clean.
+### What Works
+- Kernel boots successfully (console fix applied)
+- halium-boot.img built and valid (15.5MB)
+- system.img built successfully
+- Android init runs from ramdisk
+- USB gadget configured
+
+### What's Broken
+1. Charger mode (bootloader passes bootmode=charger)
+2. Black screen (display driver not loading)
+3. /system still has stock Android (not Halium)
+4. No /lib/modules in ramdisk
 
 ---
 
 ## 📋 Next Steps (In Order — Do Not Skip)
 
-### Step 1: Flash to Device
+### Step 1: Fix Charger Mode (TODAY)
 ```bash
-# Reboot to bootloader
-adb reboot bootloader
-
-# Flash boot and system images
-fastboot flash boot out/target/product/potter/halium-boot.img
-fastboot flash system out/target/product/potter/system.img
-fastboot reboot
+# Add androidboot.bootmode=normal to force normal boot
+cd /home/vaibhavpandit/potter-ut/halium/device/motorola/potter
+# Edit BoardConfig.mk line 48:
+# BOARD_KERNEL_CMDLINE := androidboot.bootmode=normal console=tty0 ...
 ```
 
-### Step 2: Test Halium Boot
+### Step 2: Rebuild Boot Image (TODAY)
 ```bash
-# Verify Halium property
+cd /home/vaibhavpandit/potter-ut/halium
+source build/envsetup.sh && breakfast potter
+mka halium-boot
+```
+
+### Step 3: Flash via TWRP (TODAY)
+```bash
+# Boot TWRP
+fastboot boot recovery.img
+
+# Flash boot image
+adb push out/target/product/potter/halium-boot.img /tmp/
+adb shell "dd if=/tmp/halium-boot.img of=/dev/block/mmcblk0p37 bs=4M"
+adb shell "sync"
+adb reboot
+```
+
+### Step 4: Test Boot
+```bash
+adb devices
+adb shell dmesg | tail -50
+adb shell ps | grep -E "init|surfaceflinger|zygote"
+```
+
+### Step 5: If Still Black Screen - Check Display Driver
+```bash
+# Check kernel config for display driver
+grep -E "DRM|MDSS|MSM_DSM|FRAMEBUFFER" \
+    kernel/motorola/msm8953/arch/arm64/configs/potter_defconfig
+
+# Should have:
+# CONFIG_DRM_MSM=y
+# CONFIG_DRM_MSM_DSI=y
+# CONFIG_FB_MSM_MDSS=y
+```
+
+### Step 6: Flash Halium system.img
+```bash
+# Flash via TWRP:
+fastboot boot recovery.img
+adb push out/target/product/potter/system.img /tmp/
+adb shell "dd if=/tmp/system.img of=/dev/block/mmcblk0p53 bs=4M"
+adb shell "sync"
+adb reboot
+```
+
+### Step 7: Test Halium Boot
+```bash
 adb wait-for-device
 adb shell getprop ro.halium.version
-
-# Check HAL services are active
-adb shell ps | grep -E "surfaceflinger|audioserver|rild"
+adb shell ps | grep -E "surfaceflinger|audioserver"
 ```
 
-### Step 3: Install Ubuntu Touch Rootfs
-After confirming Halium boots successfully, install the Ubuntu Touch rootfs using the UBports installer or manually via TWRP.
+### Step 8: Install Ubuntu Touch Rootfs
+After confirming Halium boots successfully, install the Ubuntu Touch rootfs
+using the UBports installer or manually via TWRP.
 
 ---
 
