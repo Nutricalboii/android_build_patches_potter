@@ -2,7 +2,7 @@
 # Script to apply custom Halium 9.0 build patches to the ROM workspace.
 # Run this from the root of the ROM workspace (e.g. halium/).
 
-PATCHES_DIR="android_build_patches_potter/patches"
+PATCHES_DIR="$(cd "$(dirname "$0")/patches" && pwd)"
 
 apply_patch() {
   local target_dir="$1"

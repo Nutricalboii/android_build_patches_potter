@@ -710,9 +710,9 @@ devicename=potter
 - **Symptom**: Device shows black screen, initramfs panics with "No init found"
 - **Cause**: halium initramfs needs rootfs.img on userdata partition. Without it, initramfs panics because system partition only has Android apps/framework, not a Linux rootfs with /sbin/init
 - **Evidence**: Kernel panic → "No init found" → reboot/hang
-- **Fix**: Created rootfs.img (1804MB ext4) at /tmp/rootfs.img from UBports rootfs
+- **Fix**: Created rootfs.img (1804MB ext4) at /tmp/rootfs.img from UBports rootfs and flashed to `/dev/block/bootdevice/by-name/userdata` (`mmcblk0p54`) via TWRP.
 - **Rootfs Source**: ubuntu-touch-android9-armhf.tar.gz (546MB) from ci.ubports.com
-- **Status**: 🟡 In Progress — rootfs.img created, needs flashing to userdata
+- **Status**: ✅ Resolved
 
 ### Issue 14: Display Driver Not Working
 - **Symptom**: Blue/black screen, no display output
@@ -723,10 +723,10 @@ devicename=potter
 
 ### Issue 15: Build System Broken — Python 3.14 Compat
 - **Symptom**: Can't rebuild system.img due to Python 3.14 compatibility issues
-- **Cause**: Python 3.14 deprecations + TeleService resource errors
-- **Evidence**: Build fails on TeleService compilation
-- **Fix**: Need to fix additional Python 3.14 compat issues in build system
-- **Status**: 🟡 Open — system.img from Jun 8 still works
+- **Cause**: Python 3.14 deprecations (ConfigParser vs configparser, NamedTemporaryFile text mode)
+- **Evidence**: Build fails on plat_mac_permissions.xml and insertkeys.py execution
+- **Fix**: Patched `system/sepolicy/tools/insertkeys.py` to support fallback configparser import and open certificates in text mode, and patched `system/sepolicy/build/file_utils.py` to open `NamedTemporaryFile` in text mode.
+- **Status**: ✅ Resolved
 
 ### Issue 16: Serial Console Disabled
 - **Symptom**: Can't see kernel output on serial port
@@ -862,10 +862,12 @@ gantt
     section Phase 6
     Fix Charger Mode          :done, p6, after p5c, 1d
     Create rootfs.img         :done, p6b, after p6, 1d
-    Flash rootfs.img          :active, p6c, after p6b, 1d
-    Fix Display Driver        :p6d, after p6c, 1d
+    Flash rootfs.img          :done, p6c, after p6b, 1d
+    System Logger Service     :done, p6d, after p6c, 1d
+    Rebuild system.img        :active, p6e, after p6d, 1d
+    Fix Display Driver        :p6f, after p6e, 1d
     section Phase 7
-    Ubuntu Touch Integration  :p7, after p6d, 3d
+    Ubuntu Touch Integration  :p7, after p6f, 3d
 ```
 
 ---

@@ -177,50 +177,51 @@ df -h /
 
 ---
 
-## 🔄 Current State (June 11, 2026)
+## 🔄 Current State (June 12, 2026)
 
 ```
-BUILD STATUS: halium-boot.img + system.img BUILT AND FLASHED
+BUILD STATUS: halium-boot.img + system.img BUILT AND FLASHED (rebuild in progress for logger service)
 BOOT STATUS: Kernel boots successfully (no more "device can't be trusted")
-ROOT CAUSE: Black screen caused by missing rootfs.img on userdata partition
-NEXT: Flash rootfs.img to userdata partition, reboot, test
+ROOTFS STATUS: Flashed successfully to userdata (mmcblk0p54)
+LOGGER STATUS: Appended custom logcat service 'logger' to init.mmi.rc
+NEXT: Flash rebuilt system.img containing logger service, boot device, and extract cache boot log / recovery last_kmsg
 ```
 
 ### What Works
 - Kernel boots successfully (charger mode fixed)
 - halium-boot.img flashed to boot partition
-- system.img (621MB) flashed to system partition
-- rootfs.img created (1804MB) at /tmp/rootfs.img
+- system.img (621MB) flashed to system partition (rebuilding now with custom logcat logger service)
+- rootfs.img created (1804MB) and flashed to userdata partition
 - Charger mode fixed (androidboot.bootmode=normal)
+- Python 3.14 build system compatibility fixes (insertkeys.py, file_utils.py, post_process_props.py)
 
-### What's Broken
-1. **Black screen** - initramfs panics without rootfs.img on userdata
-2. **Display driver** - CONFIG_FB_MSM_MDP not set, CONFIG_FRAMEBUFFER_CONSOLE not set
-3. **Build system** - Python 3.14 compat + TeleService resource errors
-4. **Serial console** - CONFIG_SERIAL_MSM_HSL not set
+### What's Broken / In Progress
+1. **Display driver** - CONFIG_FB_MSM_MDP not set, CONFIG_FRAMEBUFFER_CONSOLE not set
+2. **Serial console** - CONFIG_SERIAL_MSM_HSL not set
+3. **Boot troubleshooting** - Bypassing Motorola blue screen / logo stall
 
 ---
 
 ## 📋 Next Steps (In Order — Do Not Skip)
 
-### Step 1: Flash rootfs.img (TODAY)
+### Step 1: Flash Rebuilt system.img (TODAY)
 ```bash
-# Device must be in fastboot mode
-fastboot flash userdata /tmp/rootfs.img
-
-# If too large, use TWRP:
-fastboot boot recovery.img
-adb push /tmp/rootfs.img /tmp/
-adb shell "dd if=/tmp/rootfs.img of=/dev/block/mmcblk0p54 bs=4M"
+# Push the rebuilt system.img to TWRP
+adb push out/target/product/potter/system.img /tmp/
+adb shell "dd if=/tmp/system.img of=/dev/block/bootdevice/by-name/system bs=4M"
 adb shell "sync"
-adb reboot
 ```
 
-### Step 2: Test Boot
+### Step 2: Test Boot & Retrieve Logs
 ```bash
-adb wait-for-device
-adb shell dmesg | tail -50
-adb shell ps | grep -E "init|surfaceflinger|zygote"
+# Reboot using fastboot boot (to bypass unlocked bootloader warnings)
+adb reboot bootloader
+fastboot boot out/target/product/potter/halium-boot.img
+
+# Let it boot (blue screen) for 30s. If it stalls, reboot back to TWRP and pull logs:
+adb reboot recovery
+adb pull /cache/boot_log.txt ./
+adb pull /cache/recovery/last_kmsg ./
 ```
 
 ### Step 3: If Still Black Screen - Fix Display Driver
