@@ -718,8 +718,8 @@ devicename=potter
 - **Symptom**: Blue/black screen, no display output
 - **Cause**: CONFIG_FB_MSM_MDP not set, CONFIG_FRAMEBUFFER_CONSOLE not set
 - **Evidence**: No DRM/MDSS messages in kernel log
-- **Fix**: Enable in kernel config: `CONFIG_FB_MSM_MDP=y`, `CONFIG_FRAMEBUFFER_CONSOLE=y`
-- **Status**: 🟡 Open — needs kernel config update
+- **Fix**: Enabled in kernel config: `CONFIG_FB_MSM_MDP=y`, `CONFIG_FRAMEBUFFER_CONSOLE=y`
+- **Status**: ✅ Resolved
 
 ### Issue 15: Build System Broken — Python 3.14 Compat
 - **Symptom**: Can't rebuild system.img due to Python 3.14 compatibility issues
@@ -733,6 +733,15 @@ devicename=potter
 - **Cause**: CONFIG_SERIAL_MSM_HSL not set
 - **Fix**: Enable in kernel config: `CONFIG_SERIAL_MSM_HSL=y`
 - **Status**: 🟡 Open — needs kernel config update
+
+### Issue 17: F2FS Userdata Partition Crashes Initramfs Boot Script
+- **Symptom**: Stuck on Motorola splash/blue screen, no USB interface exposed.
+- **Cause**: Userdata partition is formatted as `f2fs`. The initramfs `/scripts/halium` assumed `ext4` userdata, leading to:
+  1. Running `e2fsck -y` on f2fs (failing/hanging).
+  2. Running `dumpe2fs` inside `resize_userdata_if_needed`, returning empty `fsblocks` and causing a shell syntax error `dblocks=$((pblocks - 4 * ))` which aborted the script.
+  3. Appending a trailing comma to mount options: `mount -o discard, /dev/... /tmpmnt` (syntax error).
+- **Fix**: Modified `/scripts/halium` to detect the filesystem type via `blkid`. Added conditionals to skip `e2fsck` and `dumpe2fs` on non-ext4 filesystems and formatted mount options cleanly without trailing commas. Repacked the local `initramfs.gz`.
+- **Status**: ✅ Resolved
 
 ---
 
