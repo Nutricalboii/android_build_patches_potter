@@ -180,25 +180,25 @@ df -h /
 ## 🔄 Current State (June 12, 2026)
 
 ```
-BUILD STATUS: halium-boot.img + system.img REBUILT AND FLASHED (logger service and display drivers included)
-BOOT STATUS: Kernel boots successfully (no more "device can't be trusted")
+BUILD STATUS: halium-boot.img + system.img REBUILT AND FLASHED (stable display configs, F2FS initramfs fix, and logger service included)
+BOOT STATUS: Kernel boots past blue Motorola screen to black screen (stuck)
 ROOTFS STATUS: Flashed successfully to userdata (mmcblk0p54)
 LOGGER STATUS: Appended custom logcat service 'logger' to init.mmi.rc (flashed)
-NEXT: Boot device using fastboot boot, monitor display for output, and retrieve boot logs
+NEXT: Reboot to TWRP recovery, retrieve boot logs from last_kmsg to diagnose the black screen hang.
 ```
 
 ### What Works
 - Kernel boots successfully (charger mode fixed)
-- Display drivers enabled (`CONFIG_FB_MSM_MDP=y` and `CONFIG_FRAMEBUFFER_CONSOLE=y` compiled in)
-- halium-boot.img (14.9MB, with new parameters and drivers) flashed to boot partition
+- Boot image size optimized (14.8MB, switches to Image.gz without DTB duplication to fit 16.0MB partition)
+- F2FS support added to initramfs mounting scripts to prevent syntax-crash hangs on userdata partition
+- halium-boot.img flashed to boot partition
 - system.img (627MB, with logger service) flashed to system partition
-- rootfs.img created (1804MB) and flashed to userdata partition
-- Charger mode fixed (androidboot.bootmode=normal)
+- rootfs.img created (1804MB) and dd-flashed directly to userdata partition
 - Python 3.14 build system compatibility fixes (insertkeys.py, file_utils.py, post_process_props.py)
 
 ### What's Broken / In Progress
 1. **Serial console** - CONFIG_SERIAL_MSM_HSL not set
-2. **Boot troubleshooting** - Bypassing Motorola logo splash screen (ready to test display output)
+2. **Black screen hang** - Needs logs from last_kmsg to identify where initramfs or userspace mounts are hanging.
 
 ---
 
