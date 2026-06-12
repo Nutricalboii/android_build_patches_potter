@@ -180,25 +180,25 @@ df -h /
 ## 🔄 Current State (June 12, 2026)
 
 ```
-BUILD STATUS: halium-boot.img + system.img REBUILT AND FLASHED (logger service included)
+BUILD STATUS: halium-boot.img + system.img REBUILT AND FLASHED (logger service and display drivers included)
 BOOT STATUS: Kernel boots successfully (no more "device can't be trusted")
 ROOTFS STATUS: Flashed successfully to userdata (mmcblk0p54)
 LOGGER STATUS: Appended custom logcat service 'logger' to init.mmi.rc (flashed)
-NEXT: Boot device to Motorola blue screen, let sit for 30s, reboot to TWRP, and extract /cache/boot_log.txt and /cache/recovery/last_kmsg
+NEXT: Boot device using fastboot boot, monitor display for output, and retrieve boot logs
 ```
 
 ### What Works
 - Kernel boots successfully (charger mode fixed)
-- halium-boot.img (14.9MB, with new parameters) flashed to boot partition
+- Display drivers enabled (`CONFIG_FB_MSM_MDP=y` and `CONFIG_FRAMEBUFFER_CONSOLE=y` compiled in)
+- halium-boot.img (14.9MB, with new parameters and drivers) flashed to boot partition
 - system.img (627MB, with logger service) flashed to system partition
 - rootfs.img created (1804MB) and flashed to userdata partition
 - Charger mode fixed (androidboot.bootmode=normal)
 - Python 3.14 build system compatibility fixes (insertkeys.py, file_utils.py, post_process_props.py)
 
 ### What's Broken / In Progress
-1. **Display driver** - CONFIG_FB_MSM_MDP not set, CONFIG_FRAMEBUFFER_CONSOLE not set
-2. **Serial console** - CONFIG_SERIAL_MSM_HSL not set
-3. **Boot troubleshooting** - Bypassing Motorola blue screen / logo stall (ready to gather container and kernel logs)
+1. **Serial console** - CONFIG_SERIAL_MSM_HSL not set
+2. **Boot troubleshooting** - Bypassing Motorola logo splash screen (ready to test display output)
 
 ---
 

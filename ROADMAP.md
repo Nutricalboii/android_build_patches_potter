@@ -865,7 +865,7 @@ gantt
     Flash rootfs.img          :done, p6c, after p6b, 1d
     System Logger Service     :done, p6d, after p6c, 1d
     Rebuild system.img        :done, p6e, after p6d, 1d
-    Fix Display Driver        :p6f, after p6e, 1d
+    Fix Display Driver        :done, p6f, after p6e, 1d
     section Phase 7
     Ubuntu Touch Integration  :p7, after p6f, 3d
 ```
